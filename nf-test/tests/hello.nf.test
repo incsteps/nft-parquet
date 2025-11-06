@@ -1,0 +1,27 @@
+nextflow_workflow {
+
+    name "Test Basic"
+    script "workflows/hello.nf"
+    workflow "MAIN"
+
+    test("Should run without failures") {
+        setup(){
+            new File('workflows/demo.parquet')?.delete()
+        }
+        when {
+            params {
+            }
+            workflow {
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.out.get(0)[0].endsWith("demo.parquet")
+            assert path(workflow.out.get(0)[0]).parquet
+            assert path(workflow.out.get(0)[0]).parquet.rowCount == 3
+        }
+
+    }
+
+}

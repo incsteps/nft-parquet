@@ -1,0 +1,4 @@
+moduleName=nft-parquet
+moduleVersion=1.0.0
+moduleAuthors=Jorge Aguilera
+extensionClasses=com.incsteps.nftest.parquet.PathExtension

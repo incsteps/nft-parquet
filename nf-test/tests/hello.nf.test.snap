@@ -1,0 +1,16 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    "demo.parquet:md5,9b327349abbd7ddbd76090ddd51eb79a"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-11-06T11:49:17.640407451"
+    }
+}
