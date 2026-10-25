@@ -43,4 +43,62 @@ class ParquetWrapper {
         final reader = new CarpetReader(parquetFile,Map)
         reader.stream().count()
     }
+
+    int getColumnCount(){
+        return columnCount()
+    }
+
+    int columnCount(){
+        final reader = new CarpetReader(parquetFile,Map)
+        final first = reader.bufferedIterator().next() as Map
+        return first.keySet().size()
+    }
+
+    Map<String,Class>getSchema(){
+        return schema()
+    }
+
+    Map<String,Class>schema(){
+        final reader = new CarpetReader(parquetFile,Map)
+        final first = reader.bufferedIterator().next() as Map<String,Object>
+        return first.entrySet().collectEntries{
+            [(it.key):it.class]
+        }
+    }
+
+    String[]getColumnNames(){
+        return columnNames()
+    }
+
+    String[] columnNames(){
+        final reader = new CarpetReader(parquetFile,Map)
+        final first = reader.bufferedIterator().next() as Map<String,Object>
+        return first.keySet() as String[]
+    }
+
+    List<Object[]>getRows(){
+        return rows()
+    }
+
+    List<Object[]>rows(){
+        final reader = new CarpetReader<Map<String, Object>>(parquetFile,Map)
+        reader.bufferedIterator().collect { Map<String, Object> row->
+            row.values() as Object[]
+        }
+    }
+
+    Object[]getRowIndex(int index){
+        return rowIndex(index)
+    }
+
+    Object[]rowIndex(int index){
+        final reader = new CarpetReader<Map<String, Object>>(parquetFile,Map)
+        reader.stream()
+                .skip(index ? index-1 : index)
+                .map {row -> row.values()}
+                .limit(1)
+                .findFirst()
+                .get() as Object[]
+    }
+
 }
