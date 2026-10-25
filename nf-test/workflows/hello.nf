@@ -1,15 +1,12 @@
 include { toParquet } from 'plugin/nf-parquet'
 
-import myrecords.*
-
-
 workflow MAIN {
     main:
-    channel.of(1,2,3)
+    channel.of(1..10_000)
             .map( {
-                new CustomRecord(it, "the $it record", it, it, it)
+                new myrecords.CustomRecord(it, "the $it record", it, it, it)
             })
-            .toParquet("${workDir}/demo.parquet", [record: CustomRecord])
+            .toParquet("${workDir}/demo.parquet", [record: myrecords.CustomRecord])
 
     emit:
     "${workDir}/demo.parquet"

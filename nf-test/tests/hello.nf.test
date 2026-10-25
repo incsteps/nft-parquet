@@ -17,9 +17,30 @@ nextflow_workflow {
 
         then {
             assert workflow.success
-            assert workflow.out.get(0)[0].endsWith("demo.parquet")
-            assert path(workflow.out.get(0)[0]).parquet
-            assert path(workflow.out.get(0)[0]).parquet.rowCount == 3
+            def outfile = workflow.out.get(0)[0]
+            assert outfile.endsWith("demo.parquet")
+            assert path(outfile).parquet
+
+            with(path(outfile).parquet) {
+                assert rowCount == 10_000
+                assert columnCount == 5
+                assert columnNames == ["id","name","sizell","value","percentile"]
+
+                // use `rows` if file is not so big as rows are loaded in memory
+                assert rows.size() == 10_000
+                assert rows[0] == [1, 'the 1 record', 1, 1.0, 1.0]
+
+                // if file is too big, specify the record index to avoid loading all records in memory
+                assert rowIndex(500) == [500, 'the 500 record', 500, 500.0, 500.0]
+            }
+
+            path(outfile).parquet.schema == [
+                "id":Long,
+                "name":String,
+                "percentile":Double,
+                "sizell":Long,
+                "value":Double,
+            ]
         }
 
     }
