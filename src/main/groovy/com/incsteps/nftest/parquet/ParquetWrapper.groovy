@@ -100,11 +100,11 @@ class ParquetWrapper {
         }
     }
 
-    Object[]getRowIndex(int index){
+    Object[]getRowIndex(long index){
         return rowIndex(index)
     }
 
-    Object[]rowIndex(int index){
+    Object[]rowIndex(long index){
         final reader = new CarpetReader<Map<String, Object>>(parquetFile,Map)
         reader.stream()
                 .skip(index ? index-1 : index)
