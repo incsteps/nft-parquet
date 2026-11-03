@@ -26,7 +26,6 @@ import org.apache.parquet.schema.OriginalType
 import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Type
 
-import java.nio.file.Paths
 
 /**
  *
