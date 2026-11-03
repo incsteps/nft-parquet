@@ -19,10 +19,7 @@ package com.incsteps.nftest.parquet
 
 import groovy.transform.CompileStatic
 import com.jerolba.carpet.CarpetReader
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetFileReader
-import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.io.LocalInputFile
 import org.apache.parquet.schema.GroupType
 import org.apache.parquet.schema.OriginalType
