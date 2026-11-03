@@ -57,9 +57,7 @@ class ParquetWrapper {
     }
 
     int columnCount(){
-        final reader = new CarpetReader(parquetFile,Map)
-        final first = reader.bufferedIterator().next() as Map
-        return first.keySet().size()
+        return columnNames().length
     }
 
     Map<String,Class<?>>getSchema(){
@@ -86,9 +84,9 @@ class ParquetWrapper {
     }
 
     String[] columnNames(){
-        final reader = new CarpetReader(parquetFile,Map)
-        final first = reader.bufferedIterator().next() as Map<String,Object>
-        return first.keySet() as String[]
+        try (ParquetFileReader reader = ParquetFileReader.open(new LocalInputFile(parquetFile.toPath()))) {
+            return reader.footer.fileMetaData.schema.fields.collect { Type type -> type.name } as String[]
+        }
     }
 
     List<Object[]>getRows(){
