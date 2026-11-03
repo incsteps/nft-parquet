@@ -1,0 +1,38 @@
+nextflow_workflow {
+
+    name "Test Empty"
+    script "workflows/empty.nf"
+    workflow "MAIN"
+
+    test("Should read metadata from a file with no rows") {
+        when {
+            params {
+            }
+            workflow {
+            }
+        }
+
+        then {
+            assert workflow.success
+            def outfile = workflow.out.get(0)[0]
+            assert outfile.endsWith("empty.parquet")
+
+            with(path(outfile).parquet) {
+                assert rowCount == 0
+                assert columnCount == 5
+                assert columnNames == ["id","name","sizell","value","percentile"]
+                assert rows.size() == 0
+            }
+
+            assert path(outfile).parquet.schema == [
+                "id":Long,
+                "name":String,
+                "percentile":Double,
+                "sizell":Integer,
+                "value":Double,
+            ]
+        }
+
+    }
+
+}
