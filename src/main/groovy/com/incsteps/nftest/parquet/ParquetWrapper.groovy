@@ -42,13 +42,14 @@ class ParquetWrapper {
         this.arguments = arguments
     }
 
-    int getRowCount(){
+    long getRowCount(){
         return rowCount()
     }
 
-    int rowCount(){
-        final reader = new CarpetReader(parquetFile,Map)
-        reader.stream().count()
+    long rowCount(){
+        try (ParquetFileReader reader = ParquetFileReader.open(new LocalInputFile(parquetFile.toPath()))) {
+            return reader.recordCount
+        }
     }
 
     int getColumnCount(){
