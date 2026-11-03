@@ -19,6 +19,17 @@ package com.incsteps.nftest.parquet
 
 import groovy.transform.CompileStatic
 import com.jerolba.carpet.CarpetReader
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.parquet.hadoop.ParquetFileReader
+import org.apache.parquet.hadoop.util.HadoopInputFile
+import org.apache.parquet.io.LocalInputFile
+import org.apache.parquet.schema.GroupType
+import org.apache.parquet.schema.OriginalType
+import org.apache.parquet.schema.PrimitiveType
+import org.apache.parquet.schema.Type
+
+import java.nio.file.Paths
 
 /**
  *
@@ -54,16 +65,23 @@ class ParquetWrapper {
         return first.keySet().size()
     }
 
-    Map<String,Class>getSchema(){
+    Map<String,Class<?>>getSchema(){
         return schema()
     }
 
-    Map<String,Class>schema(){
-        final reader = new CarpetReader(parquetFile,Map)
-        final first = reader.bufferedIterator().next() as Map<String,Object>
-        return first.entrySet().collectEntries{
-            [(it.key):it.class]
+    Map<String, Class<?>> schema() {
+        def inputFile = new LocalInputFile(parquetFile.toPath())
+        Map<String, Class<?>> result = [:]
+
+        try (ParquetFileReader reader = ParquetFileReader.open(inputFile)) {
+            def metadata = reader.getFooter()
+            def messageType = metadata.getFileMetaData().getSchema()
+
+            messageType.fields.each { Type type ->
+                extractFields(type, "", result)
+            }
         }
+        return result
     }
 
     String[]getColumnNames(){
@@ -101,4 +119,42 @@ class ParquetWrapper {
                 .get() as Object[]
     }
 
+    private void extractFields(Type type, String currentPath, Map<String, Class<?>> result) {
+        String fieldName = currentPath.isEmpty() ? type.name : "${currentPath}.${type.name}"
+
+        if (type.isPrimitive()) {
+            PrimitiveType prim = type.asPrimitiveType()
+            result[fieldName] = getJavaClass(prim)
+        } else {
+            GroupType group = type.asGroupType()
+            group.fields.each { childType ->
+                extractFields(childType, fieldName, result)
+            }
+        }
+    }
+
+    private Class<?> getJavaClass(PrimitiveType prim) {
+        def originalType = prim.originalType
+
+        switch (prim.primitiveTypeName) {
+            case PrimitiveType.PrimitiveTypeName.BOOLEAN:
+                return Boolean.class
+            case PrimitiveType.PrimitiveTypeName.INT32:
+                return Integer.class
+            case PrimitiveType.PrimitiveTypeName.INT64:
+                return Long.class
+            case PrimitiveType.PrimitiveTypeName.FLOAT:
+                return Float.class
+            case PrimitiveType.PrimitiveTypeName.DOUBLE:
+                return Double.class
+            case PrimitiveType.PrimitiveTypeName.BINARY:
+            case PrimitiveType.PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY:
+                if (originalType == OriginalType.UTF8) {
+                    return String.class
+                }
+                return byte[].class
+            default:
+                return Object.class
+        }
+    }
 }

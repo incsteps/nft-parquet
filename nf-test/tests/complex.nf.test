@@ -1,0 +1,37 @@
+nextflow_workflow {
+
+    name "Test Complex"
+    script "workflows/complex.nf"
+    workflow "MAIN"
+
+    test("Should run without failures") {
+        setup(){
+            new File('workflows/people.parquet')?.delete()
+        }
+        when {
+            params {
+            }
+            workflow {
+            }
+        }
+
+        then {
+            assert workflow.success
+            def outfile = workflow.out.get(0)[0]
+            assert outfile.endsWith("people.parquet")
+            assert path(outfile).parquet
+
+            assert path(outfile).parquet.schema == [
+                "id":Long,
+                "job.company":String,
+                "job.position":String,
+                "job.years":Integer,
+                "address.street":String,
+                "address.zip":String,
+                "address.city":String,
+            ]
+        }
+
+    }
+
+}

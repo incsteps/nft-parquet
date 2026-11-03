@@ -34,11 +34,11 @@ nextflow_workflow {
                 assert rowIndex(500) == [500, 'the 500 record', 500, 500.0, 500.0]
             }
 
-            path(outfile).parquet.schema == [
+            assert path(outfile).parquet.schema == [
                 "id":Long,
                 "name":String,
                 "percentile":Double,
-                "sizell":Long,
+                "sizell":Integer,
                 "value":Double,
             ]
         }
