@@ -68,3 +68,20 @@ test("Should validate parquet schema") {
   }
 }
 ```
+
+In case your schema is more complex, you can also use the `schema` method to access the full schema map.
+
+```groovy
+test("Should validate nested parquet schema") {
+  then {
+    def outfile = workflow.out.get(0)[0]
+
+    assert path(outfile).parquet.schema == [
+            "id": Long,
+            "user.name": String,
+            "user.address.city": String,
+            "user.address.zipcode": Long
+    ]
+  }
+}
+```
