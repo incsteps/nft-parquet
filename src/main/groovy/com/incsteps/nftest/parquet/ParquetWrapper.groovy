@@ -42,26 +42,25 @@ class ParquetWrapper {
         this.arguments = arguments
     }
 
-    int getRowCount(){
+    long getRowCount() {
         return rowCount()
     }
 
-    int rowCount(){
-        final reader = new CarpetReader(parquetFile,Map)
-        reader.stream().count()
+    long rowCount() {
+        try (ParquetFileReader reader = ParquetFileReader.open(new LocalInputFile(parquetFile.toPath()))) {
+            return reader.recordCount
+        }
     }
 
-    int getColumnCount(){
+    int getColumnCount() {
         return columnCount()
     }
 
-    int columnCount(){
-        final reader = new CarpetReader(parquetFile,Map)
-        final first = reader.bufferedIterator().next() as Map
-        return first.keySet().size()
+    int columnCount() {
+        return columnNames().length
     }
 
-    Map<String,Class<?>>getSchema(){
+    Map<String, Class<?>> getSchema() {
         return schema()
     }
 
@@ -80,32 +79,32 @@ class ParquetWrapper {
         return result
     }
 
-    String[]getColumnNames(){
+    String[] getColumnNames() {
         return columnNames()
     }
 
-    String[] columnNames(){
-        final reader = new CarpetReader(parquetFile,Map)
-        final first = reader.bufferedIterator().next() as Map<String,Object>
-        return first.keySet() as String[]
+    String[] columnNames() {
+        try (ParquetFileReader reader = ParquetFileReader.open(new LocalInputFile(parquetFile.toPath()))) {
+            return reader.footer.fileMetaData.schema.fields.collect { Type type -> type.name } as String[]
+        }
     }
 
-    List<Object[]>getRows(){
+    List<Object[]> getRows() {
         return rows()
     }
 
-    List<Object[]>rows(){
+    List<Object[]> rows() {
         final reader = new CarpetReader<Map<String, Object>>(parquetFile,Map)
         reader.bufferedIterator().collect { Map<String, Object> row->
             row.values() as Object[]
         }
     }
 
-    Object[]getRowIndex(int index){
+    Object[] getRowIndex(long index) {
         return rowIndex(index)
     }
 
-    Object[]rowIndex(int index){
+    Object[] rowIndex(long index) {
         final reader = new CarpetReader<Map<String, Object>>(parquetFile,Map)
         reader.stream()
                 .skip(index ? index-1 : index)
